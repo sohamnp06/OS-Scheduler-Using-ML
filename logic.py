@@ -22,46 +22,55 @@ for i in range(NUM_ROWS):
     process_type = random.choice(["CPU-bound", "IO-bound"])
 
     # -----------------------------
-    # DERIVED FEATURES (SIMPLE)
+    # DERIVED FEATURES
     # -----------------------------
 
-    # Short vs long job
     short_job = 1 if burst_time <= 5 else 0
     long_job = 1 - short_job
 
-    # IO / CPU flags
     io_flag = 1 if process_type == "IO-bound" else 0
     cpu_flag = 1 - io_flag
 
-    # Priority importance
     high_priority = 1 if priority >= 7 else 0
-
-    # Arrival type
     dynamic_arrival = 1 if arrival_time > 10 else 0
 
     # -----------------------------
-    # LABEL ASSIGNMENT (LOGICAL)
+    # PROBABILISTIC LABEL ASSIGNMENT
     # -----------------------------
 
-    # Priority Scheduling
+    # Case 1: High priority
     if priority >= 8:
-        best_algorithm = "Priority"
+        best_algorithm = random.choices(
+            ["Priority", "Round Robin", "SJF"],
+            weights=[0.7, 0.2, 0.1]
+        )[0]
 
-    # SRTF (short + dynamic)
-    elif short_job == 1 and dynamic_arrival == 1:
-        best_algorithm = "SRTF"
-
-    # SJF (short + stable)
+    # Case 2: Short jobs
     elif short_job == 1:
-        best_algorithm = "SJF"
+        if dynamic_arrival == 1:
+            best_algorithm = random.choices(
+                ["SRTF", "SJF", "Round Robin"],
+                weights=[0.6, 0.3, 0.1]
+            )[0]
+        else:
+            best_algorithm = random.choices(
+                ["SJF", "FCFS", "Round Robin"],
+                weights=[0.6, 0.3, 0.1]
+            )[0]
 
-    # Round Robin (IO or mixed behavior)
+    # Case 3: IO-heavy
     elif io_flag == 1:
-        best_algorithm = "Round Robin"
+        best_algorithm = random.choices(
+            ["Round Robin", "FCFS", "Priority"],
+            weights=[0.6, 0.3, 0.1]
+        )[0]
 
-    # FCFS (default simple case)
+    # Case 4: Default
     else:
-        best_algorithm = "FCFS"
+        best_algorithm = random.choices(
+            ["FCFS", "Round Robin", "SJF"],
+            weights=[0.6, 0.3, 0.1]
+        )[0]
 
     # -----------------------------
     # STORE ROW
@@ -88,13 +97,12 @@ for i in range(NUM_ROWS):
 
     data.append(row)
 
-
 # -----------------------------
 # SAVE TO CSV
 # -----------------------------
 
 df = pd.DataFrame(data)
 
-df.to_csv("cpu_scheduling_process.csv", index=False)
+df.to_csv("cpu_scheduling_process_v2.csv", index=False)
 
-print("✅ Process-level dataset generated: cpu_scheduling_process.csv")
+print("✅ Improved dataset generated: cpu_scheduling_process_v2.csv")
