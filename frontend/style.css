@@ -254,6 +254,22 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 
 
 /* ─── Results & Stats ────────────────────────────────── */
+.launch-status {
+    margin-top: 1rem;
+    padding: 0.85rem 1rem;
+    border-radius: 14px;
+    background: rgba(79, 172, 254, 0.12);
+    color: #d1e9ff;
+    border: 1px solid rgba(79, 172, 254, 0.4);
+    font-weight: 600;
+}
+
+.launch-status.error {
+    background: rgba(245, 101, 101, 0.12);
+    border-color: rgba(245, 101, 101, 0.45);
+    color: #ffd9d9;
+}
+
 .hidden { display: none !important; }
 
 .result-hero {

@@ -25,7 +25,7 @@
                     <form id="process-form" class="form-grid">
                         <div class="form-group">
                             <label for="p_id">Process ID</label>
-                            <input type="text" id="p_id" placeholder="e.g. P1" required>
+                            <input type="text" id="p_id" value="P1" readonly>
                         </div>
                         <div class="form-group">
                             <label for="arrival">Arrival Time</label>
@@ -100,6 +100,10 @@
                     <div class="result-hero-content">
                         <div id="overall-algo" class="algo-hero-tag">SJF</div>
                         <p id="overall-reason" class="hero-reason">Logic logic logic.</p>
+                        <button id="run-sim-btn" class="btn btn-primary" style="margin-top: 1.25rem;">
+                            <i class="fas fa-play"></i> Run Simulation
+                        </button>
+                        <div id="run-status" class="launch-status hidden"></div>
                     </div>
                     
                     <h3 class="stats-title" style="margin-top: 2rem; margin-bottom: 1rem;"><i class="fas fa-chart-line"></i> Workload Characteristics</h3>

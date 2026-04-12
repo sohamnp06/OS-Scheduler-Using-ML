@@ -1,7 +1,11 @@
+import argparse
+import json
 import pickle
 import pandas as pd
 import numpy as np
-from fastapi import FastAPI
+import subprocess
+import sys
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -127,6 +131,38 @@ async def predict_queue(processes: List[Process]):
 async def serve_frontend():
     html_path = os.path.join(os.path.dirname(__file__), "frontend", "index.html")
     return FileResponse(html_path)
+
+@app.post("/run-simulation")
+async def run_simulation(processes: List[Process]):
+    if not processes:
+        raise HTTPException(status_code=400, detail="No processes provided for simulation.")
+
+    result = await predict_queue(processes)
+
+    state = {
+        "processes": [p.model_dump() for p in processes],
+        "algorithm": result.predicted_algorithm,
+        "reason": result.reason,
+    }
+
+    state_path = os.path.join(os.path.dirname(__file__), "simulation_state.json")
+    with open(state_path, "w", encoding="utf-8") as state_file:
+        json.dump(state, state_file, indent=2)
+
+    main_py = os.path.join(os.path.dirname(__file__), "main2.py")
+    launch_args = [sys.executable, main_py, "--state", state_path]
+    popen_args = {
+        "cwd": os.path.dirname(__file__),
+        "shell": False,
+        "close_fds": True,
+    }
+
+    if sys.platform == "win32":
+        popen_args["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+
+    subprocess.Popen(launch_args, **popen_args)
+
+    return {"started": True, "message": "Simulation launched locally.", "state_file": state_path}
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")

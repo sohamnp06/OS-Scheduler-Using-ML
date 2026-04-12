@@ -1,5 +1,6 @@
 /* ─── State ─────────────────────────────────────── */
 let processes = [];
+let nextPid = 1;
 
 /* ─── DOM Refs ──────────────────────────────────── */
 const processForm    = document.getElementById('process-form');
@@ -7,6 +8,8 @@ const tableBody      = document.getElementById('table-body');
 const predictBtn     = document.getElementById('predict-btn');
 const clearBtn       = document.getElementById('clear-btn');
 const resultsSection = document.getElementById('results-section');
+const runSimBtn      = document.getElementById('run-sim-btn');
+const runStatus      = document.getElementById('run-status');
 
 // Empty-row placeholder
 const emptyRow = document.getElementById('empty-row');
@@ -16,14 +19,12 @@ processForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
     const p = {
-        id:           document.getElementById('p_id').value.trim(),
+        id:           document.getElementById('p_id').value.trim() || `P${nextPid}`,
         arrival_time: parseFloat(document.getElementById('arrival').value),
         burst_time:   parseFloat(document.getElementById('burst').value),
         priority:     parseInt(document.getElementById('priority').value),
         process_type: document.getElementById('type').value,
     };
-
-    if (!p.id) { alert('Process ID cannot be empty.'); return; }
 
     if (processes.find(x => x.id === p.id)) {
         alert(`Process "${p.id}" already exists.`);
@@ -31,9 +32,11 @@ processForm.addEventListener('submit', (e) => {
     }
 
     processes.push(p);
+    nextPid += 1;
+    document.getElementById('p_id').value = `P${nextPid}`;
     renderTable();
     processForm.reset();
-    document.getElementById('p_id').focus();
+    document.getElementById('p_id').value = `P${nextPid}`;
 });
 
 /* ─── Render Table ──────────────────────────────── */
@@ -112,9 +115,48 @@ predictBtn.addEventListener('click', async () => {
     }
 });
 
+runSimBtn.addEventListener('click', async () => {
+    if (processes.length === 0) {
+        alert('Please add processes before starting the simulation.');
+        return;
+    }
+
+    runSimBtn.disabled = true;
+    runSimBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching Simulation…';
+
+    try {
+        const response = await fetch('/run-simulation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(processes),
+        });
+
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(err);
+        }
+
+        const result = await response.json();
+        runStatus.classList.remove('hidden');
+        runStatus.classList.remove('error');
+        runStatus.textContent = '✅ Simulation launched locally. Check your desktop for the Pygame window.';
+    } catch (err) {
+        console.error(err);
+        runStatus.classList.remove('hidden');
+        runStatus.classList.add('error');
+        runStatus.textContent = '❌ Simulation launch failed. See console for details.';
+        alert('❌ Simulation launch failed:\n' + err.message);
+    } finally {
+        runSimBtn.disabled = false;
+        runSimBtn.innerHTML = '<i class="fas fa-play"></i> Run Simulation';
+    }
+});
+
 /* ─── Display Results ───────────────────────────── */
 function showResults(result) {
     resultsSection.classList.remove('hidden');
+    runStatus.classList.add('hidden');
+    runStatus.textContent = '';
     
     // Update central hero
     const algoEl = document.getElementById('overall-algo');

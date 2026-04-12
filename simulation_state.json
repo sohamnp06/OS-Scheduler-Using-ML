@@ -1,0 +1,48 @@
+{
+  "processes": [
+    {
+      "id": "P1",
+      "arrival_time": 0.0,
+      "burst_time": 5.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    },
+    {
+      "id": "P2",
+      "arrival_time": 2.0,
+      "burst_time": 5.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    },
+    {
+      "id": "P3",
+      "arrival_time": 4.0,
+      "burst_time": 5.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    },
+    {
+      "id": "P4",
+      "arrival_time": 1.0,
+      "burst_time": 2.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    },
+    {
+      "id": "P5",
+      "arrival_time": 6.0,
+      "burst_time": 2.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    },
+    {
+      "id": "P6",
+      "arrival_time": 4.0,
+      "burst_time": 3.0,
+      "priority": 3,
+      "process_type": "CPU-bound"
+    }
+  ],
+  "algorithm": "FCFS",
+  "reason": "\ud83d\udccb Balanced queue characteristics. FCFS offers simple, fair, and low-overhead scheduling for this standard workload mix."
+}
