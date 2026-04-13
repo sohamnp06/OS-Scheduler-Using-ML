@@ -17,15 +17,14 @@ import os
 # ─────────────────────────────────────────────
 # Load Model
 # ─────────────────────────────────────────────
-MODEL_PATH = os.path.join(os.path.dirname(__file__), "scheduler_model.pkl")
+import joblib
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "artifacts", "scheduler_model.pkl")
+FEAT_PATH = os.path.join(os.path.dirname(__file__), "artifacts", "feature_columns.pkl")
 if not os.path.exists(MODEL_PATH):
     raise FileNotFoundError(f"Model file not found at {MODEL_PATH}. Run train_final_model.py first.")
 
-with open(MODEL_PATH, "rb") as f:
-    model_data = pickle.load(f)
-
-pipeline = model_data["pipeline"]
-le       = model_data["label_encoder"]
+model = joblib.load(MODEL_PATH)
+feature_columns = joblib.load(FEAT_PATH)
 
 app = FastAPI(title="OS Scheduler Predictor")
 
@@ -113,10 +112,32 @@ async def predict_queue(processes: List[Process]):
         pct_cpu_bound=float(1.0 - pct_io)
     )
     
-    input_df = pd.DataFrame([stats.model_dump()])
+    from scipy.stats import skew
+    def safe_skew(arr):
+        if np.std(arr) < 1e-6:
+            return 0.0
+        return float(skew(arr))
     
-    pred_idx = pipeline.predict(input_df)[0]
-    algo = le.inverse_transform([pred_idx])[0]
+    avg_bt = float(np.mean(burst_times))
+    total = num_processes
+    short_jobs = np.sum(np.array(burst_times) < avg_bt)
+    long_jobs = np.sum(np.array(burst_times) >= avg_bt)
+
+    features = {
+        "num_processes": total,
+        "avg_burst_time": avg_bt,
+        "burst_time_variance": float(np.var(burst_times)),
+        "short_job_ratio": float(short_jobs / total),
+        "long_job_ratio": float(long_jobs / total),
+        "priority_variance": float(np.var(priorities)),
+        "arrival_irregularity": float(np.var(arrival_times)),
+        "burst_time_skewness": safe_skew(burst_times),
+        "arrival_range": float(np.max(arrival_times) - np.min(arrival_times)),
+        "max_min_burst_ratio": float(np.max(burst_times) / np.min(burst_times)) if np.min(burst_times) > 0 else 1.0
+    }
+    
+    input_vector = [features[col] for col in feature_columns]
+    algo = model.predict([input_vector])[0]
     
     reason = get_queue_reason(stats, algo)
     
@@ -149,7 +170,7 @@ async def run_simulation(processes: List[Process]):
     with open(state_path, "w", encoding="utf-8") as state_file:
         json.dump(state, state_file, indent=2)
 
-    main_py = os.path.join(os.path.dirname(__file__), "main2.py")
+    main_py = os.path.join(os.path.dirname(__file__), "main.py")
     launch_args = [sys.executable, main_py, "--state", state_path]
     popen_args = {
         "cwd": os.path.dirname(__file__),
