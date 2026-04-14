@@ -1,16 +1,17 @@
 /* ─── Design Tokens ─────────────────────────────────── */
 :root {
-    --bg:          #0b0c10;
-    --card-bg:     #16181f;
-    --card-border: #2a2d3a;
-    --text-1:      #f0f2f5;
-    --text-2:      #8892a4;
-    --accent:      #4facfe;
-    --accent-grad: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
-    --radius:      12px;
-    --radius-sm:   8px;
-    --transition:  0.22s ease;
+    --bg:          #08090a;
+    --card-bg:     #111318;
+    --card-border: #1f222b;
+    --text-1:      #fcfcfc;
+    --text-2:      #94a3b8;
+    --accent:      #38bdf8;
+    --accent-grad: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+    --radius:      16px;
+    --radius-sm:   10px;
+    --transition:  0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 /* ─── Reset ─────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -59,9 +60,10 @@ main { display: grid; gap: 2rem; }
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius);
-    padding: 2rem;
-    box-shadow: 0 8px 30px rgba(0,0,0,.35);
+    padding: 2.5rem;
+    box-shadow: 0 10px 40px rgba(0,0,0,.5);
 }
+
 
 .card h2 {
     font-size: 1.35rem;
@@ -242,15 +244,19 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
     font-weight: 800;
     letter-spacing: .05em;
     text-transform: uppercase;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-    margin-bottom: 1.5rem;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    margin-bottom: 2rem;
+    border-width: 1px;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.2));
 }
 
-.tag-fcfs     { background: #434c5e;    color: #d8dee9; border: 2px solid #6c7891; }
-.tag-sjf      { background: #1a3a5c;    color: #93c5fd; border: 2px solid #2b6cb0; }
-.tag-srtf     { background: #1a2e5c;    color: #818cf8; border: 2px solid #3730a3; }
-.tag-priority { background: #2e1a5c;    color: #c084fc; border: 2px solid #581c87; }
-.tag-rr       { background: #5c1a2e;    color: #fb7185; border: 2px solid #be123c; }
+
+.tag-fcfs     { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; }
+.tag-sjf      { background: #0c4a6e; color: #bae6fd; border: 1px solid #0ea5e9; }
+.tag-srtf     { background: #1e1b4b; color: #e0e7ff; border: 1px solid #4338ca; }
+.tag-priority { background: #3b0764; color: #f5f3ff; border: 1px solid #7c3aed; }
+.tag-rr       { background: #450a0a; color: #fee2e2; border: 1px solid #dc2626; }
+
 
 
 /* ─── Results & Stats ────────────────────────────────── */
@@ -281,9 +287,12 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 
 .result-hero h2 {
     justify-content: center;
-    font-size: 1.8rem;
-    color: var(--accent);
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text-1);
+    letter-spacing: -0.02em;
 }
+
 
 .hero-reason {
     font-size: 1.15rem;
@@ -301,14 +310,16 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 }
 
 .stat-box {
-    background: #1e2130;
-    padding: 1.25rem 1rem;
+    background: rgba(30, 33, 48, 0.5);
+    backdrop-filter: blur(8px);
+    padding: 1.5rem 1rem;
     border-radius: var(--radius-sm);
     border: 1px solid var(--card-border);
     justify-content: center;
     cursor: pointer;
     transition: all var(--transition);
 }
+
 
 .stat-box:hover {
     background: #252838;
@@ -318,20 +329,22 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 
 
 .stat-label {
-    font-size: .75rem;
+    font-size: .7rem;
     text-transform: uppercase;
-    letter-spacing: .06em;
+    letter-spacing: .08em;
     color: var(--text-2);
-    margin-bottom: .5rem;
-    font-weight: 600;
+    margin-bottom: .65rem;
+    font-weight: 700;
 }
 
 .stat-value {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    color: var(--text-1);
+    color: var(--accent);
     font-family: 'Outfit', sans-serif;
+    line-height: 1;
 }
+
 
 /* ─── Footer ─────────────────────────────────────────── */
 /* ─── Modal ──────────────────────────────────────────── */

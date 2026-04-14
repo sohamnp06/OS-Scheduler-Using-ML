@@ -191,10 +191,14 @@ function showResults(result) {
         const box = document.createElement('div');
         box.className = 'stat-box';
         box.style.cursor = 'pointer';
-        box.innerHTML = `<span class="stat-label">${item.label}</span><span class="stat-value">${item.value}</span>`;
+        box.innerHTML = `
+            <div class="stat-label">${item.label}</div>
+            <div class="stat-value">${item.value}</div>
+        `;
         box.onclick = () => showModal(item.label, descriptions[item.label]);
         statsGrid.appendChild(box);
     });
+
 
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
