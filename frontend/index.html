@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML-Powered Queue Scheduler</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <title>Workload Algorithm Optimizer</title>
+    <!-- Aggressive versioning to bypass browser cache -->
+    <link rel="stylesheet" href="/static/style.css?v=2024.4.14.1032">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          integrity="sha512-Avb2QiuDEEvB4bZJYdab/Ld0u+jGp3xAMdCPF3Jc2W4I6M1Owls5Z1W1T9iJL6QGdPMVZ9h9/bBU3JZoD1pA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
@@ -18,7 +17,6 @@
         </header>
 
         <main>
-            <!-- ── Add Process Form ── -->
             <section class="configuration-panel">
                 <div class="card">
                     <h2><i class="fas fa-plus-circle"></i> Add Process to Queue</h2>
@@ -39,13 +37,6 @@
                             <label for="priority">Priority (1–10)</label>
                             <input type="number" id="priority" min="1" max="10" value="3" required>
                         </div>
-                        <div class="form-group">
-                            <label for="type">Process Type</label>
-                            <select id="type">
-                                <option value="CPU-bound">CPU-bound</option>
-                                <option value="IO-bound">IO-bound</option>
-                            </select>
-                        </div>
                         <div class="form-actions">
                             <button type="submit" id="add-btn" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Add Process
@@ -55,7 +46,6 @@
                 </div>
             </section>
 
-            <!-- ── Process Queue Table ── -->
             <section class="display-panel">
                 <div class="card">
                     <div class="card-header">
@@ -77,15 +67,12 @@
                                     <th>Arrival</th>
                                     <th>Burst</th>
                                     <th>Priority</th>
-                                    <th>Type</th>
                                     <th></th>
                                 </tr>
                             </thead>
                             <tbody id="table-body">
                                 <tr id="empty-row">
-                                    <td colspan="6" class="text-center empty-msg">
-                                        <i class="fas fa-inbox"></i> No processes added yet.
-                                    </td>
+                                    <td colspan="5" class="text-center empty-msg">No processes added yet.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -93,32 +80,42 @@
                 </div>
             </section>
 
-            <!-- ── Overall Results ── -->
             <section id="results-section" class="results-panel hidden">
                 <div class="card result-hero">
-                    <h2><i class="fas fa-microchip"></i> Optimal Workload Algorithm</h2>
+                    <h2>Optimized Algorithm v2</h2>
+
                     <div class="result-hero-content">
                         <div id="overall-algo" class="algo-hero-tag">SJF</div>
-                        <p id="overall-reason" class="hero-reason">Logic logic logic.</p>
+                        <p id="overall-reason" class="hero-reason"></p>
                         <button id="run-sim-btn" class="btn btn-primary" style="margin-top: 1.25rem;">
-                            <i class="fas fa-play"></i> Run Simulation
+                            Run Simulation
                         </button>
                         <div id="run-status" class="launch-status hidden"></div>
                     </div>
                     
-                    <h3 class="stats-title" style="margin-top: 2rem; margin-bottom: 1rem;"><i class="fas fa-chart-line"></i> Workload Characteristics</h3>
+                    <h3 class="stats-title" style="margin-top: 2rem; margin-bottom: 1rem;">Queue Characteristics</h3>
+
                     <div id="stats-grid" class="stats-grid">
-                        <!-- Stats will go here -->
+                        <!-- Stats will be injected here -->
                     </div>
                 </div>
             </section>
         </main>
 
         <footer>
-            <p>OS Scheduler &mdash; Queue-Level ML Intelligence &copy; 2024</p>
+            <p>OS Scheduler - Queue-Level ML Intelligence 2024</p>
         </footer>
     </div>
 
-    <script src="/static/script.js"></script>
+    <!-- Stat Modal -->
+    <div id="stat-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title"></h2>
+            <p id="modal-description"></p>
+        </div>
+    </div>
+
+    <script src="/static/script.js?v=2024.4.14.1032"></script>
 </body>
 </html>

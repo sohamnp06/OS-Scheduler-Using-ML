@@ -1,10 +1,8 @@
 import argparse
 import json
-import pickle
 import os
 
 import numpy as np
-import pandas as pd
 import pygame
 import sys
 
@@ -31,44 +29,17 @@ try:
     model = joblib.load(MODEL_PATH)
     feature_columns = joblib.load(FEAT_PATH)
     model_loaded = True
-    print("✅ Loaded ML model from artifacts/scheduler_model.pkl")
+    print("Loaded ML model from artifacts/scheduler_model.pkl")
+
 except Exception as e:
-    print(f"⚠️ Could not load ML model: {e}")
+    print(f"Could not load ML model: {e}")
+
     model_loaded = False
 
 PROCESS_COLORS = [
     (99,102,241),(236,72,153),(16,185,129),
     (245,158,11),(59,130,246),(139,92,246)
 ]
-
-
-def load_state_file(file_path):
-    global color_index, prediction_ready, running_sim, current_algo, prediction_reason, state_mode
-
-    if not os.path.exists(file_path):
-        print(f"âš ï¸ State file not found: {file_path}")
-        return
-
-    with open(file_path, 'r', encoding='utf-8') as f:
-        state = json.load(f)
-
-    for p in state.get('processes', []):
-        ptype = 'IO' if p.get('process_type') == 'IO-bound' else 'CPU'
-        processes.append(Process(
-            p.get('id', 'P?'),
-            int(p.get('arrival_time', 0)),
-            int(p.get('burst_time', 0)),
-            int(p.get('priority', 1)),
-            ptype,
-            PROCESS_COLORS[color_index % len(PROCESS_COLORS)]
-        ))
-        color_index += 1
-
-    current_algo = state.get('algorithm', current_algo)
-    prediction_reason = state.get('reason', f"Loaded predicted algorithm: {current_algo}")
-    prediction_ready = True
-    state_mode = True
-    running_sim = True
 
 
 from scipy.stats import skew
@@ -179,6 +150,41 @@ q_timer = 0
 speed = 40
 state_mode = False
 
+color_index = 0
+table_view_height = 140
+table_scroll = 0
+table_row_height = 30
+
+
+def load_state_file(file_path):
+    global color_index, prediction_ready, running_sim, current_algo, prediction_reason, state_mode
+
+    if not os.path.exists(file_path):
+        print(f"Warning: State file not found: {file_path}")
+        return
+
+
+    with open(file_path, 'r', encoding='utf-8') as f:
+        state = json.load(f)
+
+    for p in state.get('processes', []):
+        ptype = 'IO' if p.get('process_type') == 'IO-bound' else 'CPU'
+        processes.append(Process(
+            p.get('id', 'P?'),
+            int(p.get('arrival_time', 0)),
+            int(p.get('burst_time', 0)),
+            int(p.get('priority', 1)),
+            ptype,
+            PROCESS_COLORS[color_index % len(PROCESS_COLORS)]
+        ))
+        color_index += 1
+
+    current_algo = state.get('algorithm', current_algo)
+    prediction_reason = state.get('reason', f"Loaded predicted algorithm: {current_algo}")
+    prediction_ready = True
+    state_mode = True
+    running_sim = True
+
 # â”€â”€â”€ UI â”€â”€â”€
 def draw_box(x, y, w, h, label):
     pygame.draw.rect(screen, (0,0,0), (x+5,y+5,w,h), border_radius=12)
@@ -255,15 +261,12 @@ def draw_table(scroll_offset):
         pygame.draw.rect(screen, (99,102,241), (track_x, thumb_y, 10, thumb_height), border_radius=5)
 
 # â”€â”€â”€ MAIN LOOP â”€â”€â”€
+# ────────────────── MAIN LOOP ──────────────────
 running = True
-color_index = 0
 done_view_width = 520
 done_offset = 0
 scroll_step = 40
 
-table_view_height = 140
-table_scroll = 0
-table_row_height = 30
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -348,15 +351,15 @@ while running:
                         ))
                         color_index+=1
                         pid_input=f"P{len(processes)+1}"
-                    except:
+                    except Exception:
                         print("Invalid input")
 
                 if predict_btn.collidepoint(event.pos):
                     if processes:
                         current_algo = ml_predict(processes)
                         if model_loaded:
-                            stats = make_queue_stats(processes)
-                            prediction_reason = get_queue_reason(stats, current_algo)
+                            features_data = compute_features(processes)
+                            prediction_reason = get_queue_reason(features_data, current_algo)
                         else:
                             prediction_reason = "ML model missing: using fallback heuristic prediction."
                         prediction_ready = True
@@ -370,8 +373,8 @@ while running:
                     elif not prediction_ready:
                         current_algo = ml_predict(processes)
                         if model_loaded and processes:
-                            stats = make_queue_stats(processes)
-                            prediction_reason = get_queue_reason(stats, current_algo)
+                            features_data = compute_features(processes)
+                            prediction_reason = get_queue_reason(features_data, current_algo)
                         elif not model_loaded:
                             prediction_reason = "ML model missing: using fallback heuristic prediction."
                         else:
@@ -421,7 +424,6 @@ while running:
                     elif active_field=="bt": bt_input+=event.unicode
                     elif active_field=="pr": priority_input+=event.unicode
 
-    # â”€â”€â”€ SIMULATION â”€â”€â”€
     if running_sim:
 
         for p in processes[:]:

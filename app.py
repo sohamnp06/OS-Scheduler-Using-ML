@@ -1,11 +1,8 @@
-import argparse
 import json
-import pickle
-import pandas as pd
 import numpy as np
 import subprocess
 import sys
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -18,6 +15,9 @@ import os
 # Load Model
 # ─────────────────────────────────────────────
 import joblib
+import warnings
+
+warnings.filterwarnings("ignore", category=UserWarning)
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "artifacts", "scheduler_model.pkl")
 FEAT_PATH = os.path.join(os.path.dirname(__file__), "artifacts", "feature_columns.pkl")
 if not os.path.exists(MODEL_PATH):
@@ -54,8 +54,7 @@ class QueueStats(BaseModel):
     arrival_spread: float
     mean_priority: float
     priority_var: float
-    pct_io_bound: float
-    pct_cpu_bound: float
+
 
 class QueuePredictionResult(BaseModel):
     predicted_algorithm: str
@@ -67,16 +66,19 @@ class QueuePredictionResult(BaseModel):
 # ─────────────────────────────────────────────
 def get_queue_reason(stats: QueueStats, algo: str) -> str:
     """Human-readable reasoning for the entire queue."""
-    if stats.pct_io_bound >= 0.5 and algo == "Round Robin":
-        return f"🌍 High I/O composition ({int(stats.pct_io_bound*100)}% I/O-bound). Round Robin is ideal for keeping the CPU busy while processes wait for I/O operations."
+    if algo == "FCFS":
+        return "Selected because processes follow arrival order and burst times are similar, so simple execution avoids unnecessary overhead."
+    if algo == "SJF":
+        return "Selected because burst times vary significantly, so executing shorter jobs first minimizes average waiting time."
+    if algo == "SRTF" or algo == "SRTN":
+        return "Selected because new short processes arrive frequently, so preempting longer jobs improves response time."
+    if algo == "RR" or algo == "Round Robin":
+        return "Selected because all processes need fair CPU sharing and responsiveness in a time-sharing environment."
+    if algo == "PRIORITY" or algo == "Priority":
+        return "Selected because processes have different importance levels, so higher priority tasks must execute first."
     
-    if stats.priority_var > 4 and stats.mean_priority >= 5 and algo == "Priority":
-        return f"🔴 Very high variance in priority ({stats.priority_var:.1f}). Priority scheduling is vital to ensure critical tasks can pre-empt lower priority ones."
-        
-    if stats.std_burst > 5 and algo in ["SJF", "SRTF"]:
-        return f"⚡ Large variation in burst times. Shortest Job First / SRTF will prevent the 'Convoy Effect' where short jobs wait endlessly for a long job to finish."
-        
-    return f"📋 Balanced queue characteristics. {algo} offers simple, fair, and low-overhead scheduling for this standard workload mix."
+    return f"Selected {algo} based on optimal feature combination for this workload."
+
 
 # ─────────────────────────────────────────────
 # API Routes
@@ -107,10 +109,9 @@ async def predict_queue(processes: List[Process]):
         min_burst=float(np.min(burst_times)),
         arrival_spread=float(np.max(arrival_times) - np.min(arrival_times)),
         mean_priority=float(np.mean(priorities)),
-        priority_var=float(np.var(priorities)),
-        pct_io_bound=float(pct_io),
-        pct_cpu_bound=float(1.0 - pct_io)
+        priority_var=float(np.var(priorities))
     )
+
     
     from scipy.stats import skew
     def safe_skew(arr):
@@ -151,7 +152,8 @@ async def predict_queue(processes: List[Process]):
 @app.get("/")
 async def serve_frontend():
     html_path = os.path.join(os.path.dirname(__file__), "frontend", "index.html")
-    return FileResponse(html_path)
+    return FileResponse(html_path, headers={"Cache-Control": "no-cache, no-store, must-revalidate", "Pragma": "no-cache", "Expires": "0"})
+
 
 @app.post("/run-simulation")
 async def run_simulation(processes: List[Process]):
@@ -186,8 +188,9 @@ async def run_simulation(processes: List[Process]):
     return {"started": True, "message": "Simulation launched locally.", "state_file": state_path}
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=False), name="static")
 
 if __name__ == "__main__":
-    print("\n🚀  Open your browser at:  http://127.0.0.1:5050\n")
+    print("\nRunning server at: http://127.0.0.1:5050\n")
     uvicorn.run("app:app", host="127.0.0.1", port=5050, reload=False)
+

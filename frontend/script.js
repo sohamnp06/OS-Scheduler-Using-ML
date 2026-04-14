@@ -2,6 +2,8 @@
 let processes = [];
 let nextPid = 1;
 
+console.log("Scheduler Script Version 2.0 Loaded");
+
 /* ─── DOM Refs ──────────────────────────────────── */
 const processForm    = document.getElementById('process-form');
 const tableBody      = document.getElementById('table-body');
@@ -23,7 +25,7 @@ processForm.addEventListener('submit', (e) => {
         arrival_time: parseFloat(document.getElementById('arrival').value),
         burst_time:   parseFloat(document.getElementById('burst').value),
         priority:     parseInt(document.getElementById('priority').value),
-        process_type: document.getElementById('type').value,
+        process_type: "CPU-bound",
     };
 
     if (processes.find(x => x.id === p.id)) {
@@ -57,7 +59,6 @@ function renderTable() {
             <td>${p.arrival_time}</td>
             <td>${p.burst_time}</td>
             <td>${p.priority}</td>
-            <td><span class="type-badge ${p.process_type === 'CPU-bound' ? 'cpu' : 'io'}">${p.process_type}</span></td>
             <td>
                 <button class="btn-icon" onclick="removeProcess(${idx})" title="Remove">
                     <i class="fas fa-times"></i>
@@ -82,14 +83,13 @@ clearBtn.addEventListener('click', () => {
 
 /* ─── Predict ───────────────────────────────────── */
 predictBtn.addEventListener('click', async () => {
-    // Need at least 3 processes, but we'll let API handle it or just enforce 1
     if (processes.length === 0) {
         alert('Please add at least one process first.');
         return;
     }
 
     predictBtn.disabled  = true;
-    predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing Workload…';
+    predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
 
     try {
         const response = await fetch('/predict', {
@@ -108,7 +108,7 @@ predictBtn.addEventListener('click', async () => {
 
     } catch (err) {
         console.error(err);
-        alert('❌ Prediction failed:\n' + err.message);
+        alert('Prediction failed:\n' + err.message);
     } finally {
         predictBtn.disabled  = false;
         predictBtn.innerHTML = '<i class="fas fa-brain"></i> Predict Workload Algorithm';
@@ -122,7 +122,7 @@ runSimBtn.addEventListener('click', async () => {
     }
 
     runSimBtn.disabled = true;
-    runSimBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching Simulation…';
+    runSimBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
 
     try {
         const response = await fetch('/run-simulation', {
@@ -136,16 +136,14 @@ runSimBtn.addEventListener('click', async () => {
             throw new Error(err);
         }
 
-        const result = await response.json();
         runStatus.classList.remove('hidden');
         runStatus.classList.remove('error');
-        runStatus.textContent = '✅ Simulation launched locally. Check your desktop for the Pygame window.';
+        runStatus.textContent = 'Simulation launched locally.';
     } catch (err) {
         console.error(err);
         runStatus.classList.remove('hidden');
         runStatus.classList.add('error');
-        runStatus.textContent = '❌ Simulation launch failed. See console for details.';
-        alert('❌ Simulation launch failed:\n' + err.message);
+        runStatus.textContent = 'Simulation launch failed.';
     } finally {
         runSimBtn.disabled = false;
         runSimBtn.innerHTML = '<i class="fas fa-play"></i> Run Simulation';
@@ -156,7 +154,6 @@ runSimBtn.addEventListener('click', async () => {
 function showResults(result) {
     resultsSection.classList.remove('hidden');
     runStatus.classList.add('hidden');
-    runStatus.textContent = '';
     
     // Update central hero
     const algoEl = document.getElementById('overall-algo');
@@ -169,30 +166,61 @@ function showResults(result) {
     const statsGrid = document.getElementById('stats-grid');
     const s = result.stats;
     
-    statsGrid.innerHTML = `
-        <div class="stat-box"><span class="stat-label">Total Processes</span><span class="stat-value">${s.num_processes}</span></div>
-        <div class="stat-box"><span class="stat-label">Mean Burst</span><span class="stat-value">${s.mean_burst.toFixed(2)}</span></div>
-        <div class="stat-box"><span class="stat-label">Burst Std Dev</span><span class="stat-value">${s.std_burst.toFixed(2)}</span></div>
-        <div class="stat-box"><span class="stat-label">Min / Max Burst</span><span class="stat-value">${s.min_burst} / ${s.max_burst}</span></div>
-        
-        <div class="stat-box"><span class="stat-label">Arrival Spread</span><span class="stat-value">${s.arrival_spread.toFixed(1)}</span></div>
-        <div class="stat-box"><span class="stat-label">Mean Priority</span><span class="stat-value">${s.mean_priority.toFixed(2)}</span></div>
-        <div class="stat-box"><span class="stat-label">Priority Var</span><span class="stat-value">${s.priority_var.toFixed(2)}</span></div>
-        
-        <div class="stat-box"><span class="stat-label">CPU Bound</span><span class="stat-value">${(s.pct_cpu_bound * 100).toFixed(0)}%</span></div>
-        <div class="stat-box"><span class="stat-label">I/O Bound</span><span class="stat-value">${(s.pct_io_bound * 100).toFixed(0)}%</span></div>
-    `;
+    const descriptions = {
+        "Total Processes": "Calculated by counting every entry in the ready queue. This tells us the volume of tasks waiting for execution.",
+        "Mean Burst": "Calculated as (Sum of all burst times) / (Number of processes). It determines if the workload is generally quick or CPU-heavy.",
+        "Burst Std Dev": "Calculated as the standard deviation of all burst times. High variation (high std dev) indicates a mix of short and long tasks, favoring algorithms like SJF.",
+        "Min / Max Burst": "Identifies the shortest and longest single tasks in the queue, helping detect outliers that might block other processes.",
+        "Arrival Spread": "The difference between the last arrival time and the first arrival time. It shows the distribution of incoming traffic over time.",
+        "Mean Priority": "The average priority level across the queue, used to decide if priority-based logic should take precedence.",
+        "Priority Var": "The variance in priorities. High variance means some tasks are much more critical than others, requiring careful prioritization."
+    };
+
+    const statsData = [
+        { label: "Total Processes", value: s.num_processes },
+        { label: "Mean Burst", value: s.mean_burst.toFixed(2) },
+        { label: "Burst Std Dev", value: s.std_burst.toFixed(2) },
+        { label: "Min / Max Burst", value: `${s.min_burst} / ${s.max_burst}` },
+        { label: "Arrival Spread", value: s.arrival_spread.toFixed(1) },
+        { label: "Mean Priority", value: s.mean_priority.toFixed(2) },
+        { label: "Priority Var", value: s.priority_var.toFixed(2) }
+    ];
+
+    statsGrid.innerHTML = '';
+    statsData.forEach(item => {
+        const box = document.createElement('div');
+        box.className = 'stat-box';
+        box.style.cursor = 'pointer';
+        box.innerHTML = `<span class="stat-label">${item.label}</span><span class="stat-value">${item.value}</span>`;
+        box.onclick = () => showModal(item.label, descriptions[item.label]);
+        statsGrid.appendChild(box);
+    });
 
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ─── Helpers ───────────────────────────────────── */
+/* ─── Modal Handling ────────────────────────────── */
+function showModal(title, description) {
+    const modal = document.getElementById('stat-modal');
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-description').innerText = description;
+    modal.classList.remove('hidden');
+}
+
+document.querySelector('.close-modal').onclick = () => {
+    document.getElementById('stat-modal').classList.add('hidden');
+};
+
+window.onclick = (e) => {
+    const modal = document.getElementById('stat-modal');
+    if (e.target === modal) modal.classList.add('hidden');
+};
+
 function algoClass(algo) {
     const a = algo.toUpperCase();
-    if (a.includes('SRTF'))         return 'tag-srtf';
-    if (a.includes('SJF'))          return 'tag-sjf';
-    if (a.includes('PRIORITY'))     return 'tag-priority';
-    if (a.includes('ROUND ROBIN') || a.includes('RR')) return 'tag-rr';
-    if (a.includes('FCFS'))         return 'tag-fcfs';
+    if (a.includes('SRTF')) return 'tag-srtf';
+    if (a.includes('SJF')) return 'tag-sjf';
+    if (a.includes('PRIORITY')) return 'tag-priority';
+    if (a.includes('RR') || a.includes('ROUND ROBIN')) return 'tag-rr';
     return 'tag-fcfs';
 }
