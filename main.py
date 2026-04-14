@@ -147,7 +147,9 @@ active_field = None
 running_sim = False
 simulation_complete = False
 q_timer = 0
-speed = 40
+speed = 30
+speed_options = [30, 40, 60, 120]
+speed_dropdown_open = False
 state_mode = False
 
 color_index = 0
@@ -209,6 +211,16 @@ def draw_button(x,y,w,h,text,color):
     screen.blit(small_font.render(text,True,(0,0,0)),(x+10,y+5))
     return rect
 
+
+def draw_dropdown(x,y,w,h,text,open):
+    rect = pygame.Rect(x,y,w,h)
+    pygame.draw.rect(screen, CARD, rect, border_radius=6)
+    pygame.draw.rect(screen, (99,102,241), rect, 2, border_radius=6)
+    screen.blit(small_font.render(text, True, TEXT), (x+10, y+7))
+    arrow = "▲" if open else "▼"
+    screen.blit(small_font.render(arrow, True, (200,200,200)), (x + w - 22, y + 7))
+    return rect
+
 def draw_process(p):
     pygame.draw.rect(screen, p.color, (p.x,p.y,80,45), border_radius=10)
     pygame.draw.rect(screen, (255,255,255), (p.x,p.y,80,45), 1, border_radius=10)
@@ -226,7 +238,7 @@ def move_smooth(p, tx, ty):
     p.y += (ty-p.y)*0.08
 
 def draw_table(scroll_offset):
-    x, y = 50, 600
+    x, y = 50, 560
     headers = ["PID","AT","BT","PR","TYPE","CT","TAT","WT"]
     width = 960
     table_top = y + 30
@@ -276,7 +288,8 @@ if __name__ == "__main__":
         load_state_file(args.state)
 
 while running:
-    dt = clock.tick(speed) / 1000.0
+    dt = clock.tick(120) / 1000.0
+    dt *= (speed / 30.0)
 
     # Gradient BG
     for y in range(HEIGHT):
@@ -297,7 +310,7 @@ while running:
     done_offset = min(max(done_offset, 0), done_max_offset)
     draw_box(650,260,done_view_width,100,"DONE")
     done_area = pygame.Rect(650,260,done_view_width,100)
-    table_area = pygame.Rect(50, 630, 960, table_view_height)
+    table_area = pygame.Rect(50, 590, 960, table_view_height)
 
     scroll_left_rect = None
     scroll_right_rect = None
@@ -310,9 +323,20 @@ while running:
 
     screen.blit(font.render(f"TIME: {int(time_elapsed)}",True,(99,102,241)),(900,40))
     screen.blit(font.render(current_algo,True,(236,72,153)),(520,40))
-    if not state_mode:
-        screen.blit(small_font.render(prediction_reason,True,(200,200,200)),(50,40))
+    screen.blit(small_font.render(prediction_reason,True,(200,200,200)),(50,70))
 
+    speed_rect = draw_dropdown(800,130,210,30,f"Speed: {speed}", speed_dropdown_open)
+    speed_option_rects = []
+    if speed_dropdown_open:
+        for i, option in enumerate(speed_options):
+            opt_rect = pygame.Rect(800, 130 + (i + 1) * 32, 210, 30)
+            pygame.draw.rect(screen, CARD, opt_rect, border_radius=6)
+            pygame.draw.rect(screen, BORDER, opt_rect, 1, border_radius=6)
+            text_color = (16,185,129) if option == speed else TEXT
+            screen.blit(small_font.render(str(option), True, text_color), (opt_rect.x + 10, opt_rect.y + 7))
+            speed_option_rects.append(opt_rect)
+
+    if not state_mode:
         # INPUT
         pid_rect = draw_input(50,130,80,30,pid_input,active_field=="pid")
         at_rect  = draw_input(140,130,60,30,at_input,active_field=="at")
@@ -323,8 +347,6 @@ while running:
         add_btn = draw_button(460,130,70,30,"ADD",(16,185,129))
         predict_btn = draw_button(540,130,90,30,"PREDICT",(99,102,241))
         simulate_btn = draw_button(640,130,140,30,"SHOW SIMULATION",(16,185,129))
-    else:
-        screen.blit(small_font.render(prediction_reason,True,(200,200,200)),(50,70))
 
     # EVENTS
     for event in pygame.event.get():
@@ -383,6 +405,19 @@ while running:
                         running_sim = bool(processes)
                     else:
                         running_sim = True
+
+            if speed_rect.collidepoint(event.pos):
+                speed_dropdown_open = not speed_dropdown_open
+            elif speed_dropdown_open:
+                selected = False
+                for idx, opt_rect in enumerate(speed_option_rects):
+                    if opt_rect.collidepoint(event.pos):
+                        speed = speed_options[idx]
+                        speed_dropdown_open = False
+                        selected = True
+                        break
+                if not selected:
+                    speed_dropdown_open = False
 
             if scroll_left_rect and scroll_left_rect.collidepoint(event.pos):
                 done_offset = max(0, done_offset - scroll_step)
@@ -525,8 +560,12 @@ while running:
         draw_table(table_scroll)
 
     if simulation_complete and done:
+        avg_tat = sum(round(p.completion - p.arrival, 1) for p in done) / len(done)
+        avg_wt = sum(round((p.completion - p.arrival) - p.burst, 1) for p in done) / len(done)
         screen.blit(font.render("SIMULATION COMPLETE",True,(16,185,129)),(400,420))
-        screen.blit(font.render("Close the window to exit.", True, (148,163,184)), (400,450))
+        screen.blit(font.render(f"Avg Turnaround Time: {avg_tat:.1f}", True, (148,163,184)), (400,450))
+        screen.blit(font.render(f"Avg Waiting Time: {avg_wt:.1f}", True, (148,163,184)), (400,475))
+        screen.blit(font.render("Close the window to exit.", True, (148,163,184)), (400,500))
 
     pygame.display.update()
 

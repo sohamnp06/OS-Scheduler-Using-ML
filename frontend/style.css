@@ -90,7 +90,7 @@ main { display: grid; gap: 2rem; }
 /* --- Form --------------------------------------------- */
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     gap: 1.25rem;
     align-items: end;
 }
@@ -125,9 +125,9 @@ input:focus, select:focus {
 select option { background: #1e2130; }
 
 .form-actions {
-    grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
+    align-items: flex-end;
     padding-top: .5rem;
 }
 

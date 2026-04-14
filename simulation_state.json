@@ -1,34 +1,27 @@
 {
   "processes": [
     {
-      "id": "P6",
+      "id": "P1",
       "arrival_time": 0.0,
       "burst_time": 5.0,
       "priority": 3,
       "process_type": "CPU-bound"
     },
     {
-      "id": "P7",
-      "arrival_time": 2.0,
-      "burst_time": 8.0,
-      "priority": 5,
+      "id": "P2",
+      "arrival_time": 0.0,
+      "burst_time": 5.0,
+      "priority": 3,
       "process_type": "CPU-bound"
     },
     {
-      "id": "P8",
-      "arrival_time": 4.0,
-      "burst_time": 3.0,
-      "priority": 1,
-      "process_type": "CPU-bound"
-    },
-    {
-      "id": "P9",
+      "id": "P3",
       "arrival_time": 0.0,
       "burst_time": 5.0,
       "priority": 3,
       "process_type": "CPU-bound"
     }
   ],
-  "algorithm": "SJF",
-  "reason": "Selected because burst times vary significantly, so executing shorter jobs first minimizes average waiting time."
+  "algorithm": "FCFS",
+  "reason": "Selected because processes follow arrival order and burst times are similar, so simple execution avoids unnecessary overhead."
 }

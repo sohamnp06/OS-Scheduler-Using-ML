@@ -80,6 +80,26 @@ def get_queue_reason(stats: QueueStats, algo: str) -> str:
     return f"Selected {algo} based on optimal feature combination for this workload."
 
 
+def heuristic_override_algo(algo: str, stats: QueueStats, burst_times, priorities, arrival_times, pct_io: float) -> str:
+    """Override FCFS if the workload clearly benefits from another scheduling policy."""
+    if algo != "FCFS" or len(burst_times) <= 1:
+        return algo
+
+    if pct_io >= 0.4 and stats.num_processes >= 3:
+        return "RR"
+
+    if stats.priority_var >= 3.5 and stats.num_processes >= 2:
+        return "PRIORITY"
+
+    if stats.std_burst >= 1.5 and stats.num_processes >= 2:
+        return "SJF"
+
+    if stats.arrival_spread >= 2.5 and stats.num_processes >= 3:
+        return "RR"
+
+    return algo
+
+
 # ---------------------------------------------
 # API Routes
 # ---------------------------------------------
@@ -139,7 +159,8 @@ async def predict_queue(processes: List[Process]):
     
     input_vector = [features[col] for col in feature_columns]
     algo = model.predict([input_vector])[0]
-    
+
+    algo = heuristic_override_algo(algo, stats, burst_times, priorities, arrival_times, pct_io)
     reason = get_queue_reason(stats, algo)
     
     return QueuePredictionResult(

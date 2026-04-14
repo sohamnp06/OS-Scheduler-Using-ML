@@ -39,6 +39,8 @@ processForm.addEventListener('submit', (e) => {
     renderTable();
     processForm.reset();
     document.getElementById('p_id').value = `P${nextPid}`;
+    resultsSection.classList.add('hidden');
+    runStatus.classList.add('hidden');
 });
 
 /* --- Render Table -------------------------------- */
@@ -59,11 +61,6 @@ function renderTable() {
             <td>${p.arrival_time}</td>
             <td>${p.burst_time}</td>
             <td>${p.priority}</td>
-            <td>
-                <button class="btn-icon" onclick="removeProcess(${idx})" title="Remove">
-                    <i class="fas fa-times"></i>
-                </button>
-            </td>
         `;
         tableBody.appendChild(tr);
     });
@@ -78,7 +75,12 @@ window.removeProcess = function(idx) {
 /* --- Clear All ----------------------------------- */
 clearBtn.addEventListener('click', () => {
     processes = [];
+    nextPid = 1;
+    processForm.reset();
+    document.getElementById('p_id').value = `P${nextPid}`;
     renderTable();
+    resultsSection.classList.add('hidden');
+    runStatus.classList.add('hidden');
 });
 
 /* --- Predict ------------------------------------- */
