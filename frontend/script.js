@@ -1,10 +1,10 @@
-/* ─── State ─────────────────────────────────────── */
+/* --- State --------------------------------------- */
 let processes = [];
 let nextPid = 1;
 
 console.log("Scheduler Script Version 2.0 Loaded");
 
-/* ─── DOM Refs ──────────────────────────────────── */
+/* --- DOM Refs ------------------------------------ */
 const processForm    = document.getElementById('process-form');
 const tableBody      = document.getElementById('table-body');
 const predictBtn     = document.getElementById('predict-btn');
@@ -16,7 +16,7 @@ const runStatus      = document.getElementById('run-status');
 // Empty-row placeholder
 const emptyRow = document.getElementById('empty-row');
 
-/* ─── Add Process ───────────────────────────────── */
+/* --- Add Process --------------------------------- */
 processForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -41,7 +41,7 @@ processForm.addEventListener('submit', (e) => {
     document.getElementById('p_id').value = `P${nextPid}`;
 });
 
-/* ─── Render Table ──────────────────────────────── */
+/* --- Render Table -------------------------------- */
 function renderTable() {
     tableBody.innerHTML = '';
 
@@ -69,19 +69,19 @@ function renderTable() {
     });
 }
 
-/* ─── Remove Process ────────────────────────────── */
+/* --- Remove Process ------------------------------ */
 window.removeProcess = function(idx) {
     processes.splice(idx, 1);
     renderTable();
 }
 
-/* ─── Clear All ─────────────────────────────────── */
+/* --- Clear All ----------------------------------- */
 clearBtn.addEventListener('click', () => {
     processes = [];
     renderTable();
 });
 
-/* ─── Predict ───────────────────────────────────── */
+/* --- Predict ------------------------------------- */
 predictBtn.addEventListener('click', async () => {
     if (processes.length === 0) {
         alert('Please add at least one process first.');
@@ -89,7 +89,8 @@ predictBtn.addEventListener('click', async () => {
     }
 
     predictBtn.disabled  = true;
-    predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+    predictBtn.innerHTML = 'Analyzing...';
+
 
     try {
         const response = await fetch('/predict', {
@@ -111,7 +112,8 @@ predictBtn.addEventListener('click', async () => {
         alert('Prediction failed:\n' + err.message);
     } finally {
         predictBtn.disabled  = false;
-        predictBtn.innerHTML = '<i class="fas fa-brain"></i> Predict Workload Algorithm';
+        predictBtn.innerHTML = 'Predict Workload Algorithm';
+
     }
 });
 
@@ -122,7 +124,8 @@ runSimBtn.addEventListener('click', async () => {
     }
 
     runSimBtn.disabled = true;
-    runSimBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Launching...';
+    runSimBtn.innerHTML = 'Launching...';
+
 
     try {
         const response = await fetch('/run-simulation', {
@@ -146,11 +149,12 @@ runSimBtn.addEventListener('click', async () => {
         runStatus.textContent = 'Simulation launch failed.';
     } finally {
         runSimBtn.disabled = false;
-        runSimBtn.innerHTML = '<i class="fas fa-play"></i> Run Simulation';
+        runSimBtn.innerHTML = 'Run Simulation';
+
     }
 });
 
-/* ─── Display Results ───────────────────────────── */
+/* --- Display Results ----------------------------- */
 function showResults(result) {
     resultsSection.classList.remove('hidden');
     runStatus.classList.add('hidden');
@@ -203,7 +207,7 @@ function showResults(result) {
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ─── Modal Handling ────────────────────────────── */
+/* --- Modal Handling ------------------------------ */
 function showModal(title, description) {
     const modal = document.getElementById('stat-modal');
     document.getElementById('modal-title').innerText = title;

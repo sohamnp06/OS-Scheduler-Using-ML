@@ -106,7 +106,7 @@ CARD = (15, 23, 42)
 BORDER = (30, 41, 59)
 TEXT = (226, 232, 240)
 
-# â”€â”€â”€ Process â”€â”€â”€
+# --------- Process ---------
 class Process:
     def __init__(self, pid, arrival, burst, priority, ptype, color):
         self.pid = pid
@@ -122,7 +122,7 @@ class Process:
         self.target_y = self.y
         self.completion = None
 
-# â”€â”€â”€ STATE â”€â”€â”€
+# --------- STATE ---------
 processes = []
 ready = []
 cpu = None
@@ -185,7 +185,7 @@ def load_state_file(file_path):
     state_mode = True
     running_sim = True
 
-# â”€â”€â”€ UI â”€â”€â”€
+# --------- UI ---------
 def draw_box(x, y, w, h, label):
     pygame.draw.rect(screen, (0,0,0), (x+5,y+5,w,h), border_radius=12)
     pygame.draw.rect(screen, CARD, (x,y,w,h), border_radius=12)
@@ -260,8 +260,8 @@ def draw_table(scroll_offset):
         thumb_y = table_top + int(table_scroll * (table_view_height - thumb_height) / max(1, scroll_max))
         pygame.draw.rect(screen, (99,102,241), (track_x, thumb_y, 10, thumb_height), border_radius=5)
 
-# â”€â”€â”€ MAIN LOOP â”€â”€â”€
-# ────────────────── MAIN LOOP ──────────────────
+# --------- MAIN LOOP ---------
+# ------------------ MAIN LOOP ------------------
 running = True
 done_view_width = 520
 done_offset = 0

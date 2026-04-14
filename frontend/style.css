@@ -1,4 +1,4 @@
-/* ─── Design Tokens ─────────────────────────────────── */
+/* --- Design Tokens ----------------------------------- */
 :root {
     --bg:          #08090a;
     --card-bg:     #111318;
@@ -13,7 +13,7 @@
 }
 
 
-/* ─── Reset ─────────────────────────────────────────── */
+/* --- Reset ------------------------------------------- */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -26,7 +26,7 @@ body {
 
 h1, h2, h3 { font-family: 'Outfit', sans-serif; }
 
-/* ─── Layout ─────────────────────────────────────────── */
+/* --- Layout ------------------------------------------- */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -55,7 +55,7 @@ header p { color: var(--text-2); font-size: 1.05rem; }
 
 main { display: grid; gap: 2rem; }
 
-/* ─── Card ───────────────────────────────────────────── */
+/* --- Card --------------------------------------------- */
 .card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -87,7 +87,7 @@ main { display: grid; gap: 2rem; }
 
 .card-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
 
-/* ─── Form ───────────────────────────────────────────── */
+/* --- Form --------------------------------------------- */
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
@@ -131,7 +131,7 @@ select option { background: #1e2130; }
     padding-top: .5rem;
 }
 
-/* ─── Buttons ────────────────────────────────────────── */
+/* --- Buttons ------------------------------------------ */
 .btn {
     display: inline-flex;
     align-items: center;
@@ -186,7 +186,7 @@ select option { background: #1e2130; }
 }
 .btn-icon:hover { color: #f56565; background: rgba(245,101,101,.1); }
 
-/* ─── Table ──────────────────────────────────────────── */
+/* --- Table -------------------------------------------- */
 .table-container { overflow-x: auto; }
 
 table { width: 100%; border-collapse: collapse; }
@@ -223,7 +223,7 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 }
 .empty-msg i { margin-right: 6px; opacity: .5; }
 
-/* ─── Type Badge ─────────────────────────────────────── */
+/* --- Type Badge --------------------------------------- */
 .type-badge {
     display: inline-block;
     padding: 3px 10px;
@@ -235,7 +235,7 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 .type-badge.cpu { background: rgba(79,172,254,.15); color: #4facfe; }
 
 
-/* ─── Algorithm Tags ─────────────────────────────────── */
+/* --- Algorithm Tags ----------------------------------- */
 .algo-hero-tag {
     display: inline-block;
     padding: 10px 24px;
@@ -259,7 +259,7 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 
 
 
-/* ─── Results & Stats ────────────────────────────────── */
+/* --- Results & Stats ---------------------------------- */
 .launch-status {
     margin-top: 1rem;
     padding: 0.85rem 1rem;
@@ -346,8 +346,8 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
 }
 
 
-/* ─── Footer ─────────────────────────────────────────── */
-/* ─── Modal ──────────────────────────────────────────── */
+/* --- Footer ------------------------------------------- */
+/* --- Modal -------------------------------------------- */
 .modal {
     position: fixed;
     z-index: 1000;
@@ -405,7 +405,7 @@ tbody tr:hover { background: rgba(255,255,255,.025); }
     line-height: 1.7;
 }
 
-/* ────────────────── FOOTER ────────────────── */
+/* ------------------ FOOTER ------------------ */
 footer {
     text-align: center;
     margin-top: 3rem;

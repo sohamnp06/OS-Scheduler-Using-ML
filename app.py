@@ -11,9 +11,9 @@ from typing import List
 import uvicorn
 import os
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 # Load Model
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 import joblib
 import warnings
 
@@ -35,9 +35,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 # Schemas
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 class Process(BaseModel):
     id: str
     arrival_time: float
@@ -61,9 +61,9 @@ class QueuePredictionResult(BaseModel):
     reason: str
     stats: QueueStats
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 # Helpers
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 def get_queue_reason(stats: QueueStats, algo: str) -> str:
     """Human-readable reasoning for the entire queue."""
     if algo == "FCFS":
@@ -80,9 +80,9 @@ def get_queue_reason(stats: QueueStats, algo: str) -> str:
     return f"Selected {algo} based on optimal feature combination for this workload."
 
 
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 # API Routes
-# ─────────────────────────────────────────────
+# ---------------------------------------------
 @app.post("/predict", response_model=QueuePredictionResult)
 async def predict_queue(processes: List[Process]):
     if not processes:
@@ -188,9 +188,24 @@ async def run_simulation(processes: List[Process]):
     return {"started": True, "message": "Simulation launched locally.", "state_file": state_path}
 
 FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR, html=False), name="static")
+
+NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0"
+}
+
+@app.get("/static/style.css")
+async def serve_css():
+    return FileResponse(os.path.join(FRONTEND_DIR, "style.css"), media_type="text/css", headers=NO_CACHE_HEADERS)
+
+@app.get("/static/script.js")
+async def serve_js():
+    return FileResponse(os.path.join(FRONTEND_DIR, "script.js"), media_type="application/javascript", headers=NO_CACHE_HEADERS)
+
 
 if __name__ == "__main__":
-    print("\nRunning server at: http://127.0.0.1:5050\n")
-    uvicorn.run("app:app", host="127.0.0.1", port=5050, reload=False)
+    print("\nRunning server at: http://127.0.0.1:5051\n")
+    uvicorn.run("app:app", host="127.0.0.1", port=5051, reload=False)
+
 

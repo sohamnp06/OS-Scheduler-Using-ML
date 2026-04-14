@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workload Algorithm Optimizer</title>
     <!-- Aggressive versioning to bypass browser cache -->
-    <link rel="stylesheet" href="/static/style.css?v=2024.4.14.1032">
+    <link rel="stylesheet" href="/static/style.css?v=3">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -19,7 +20,8 @@
         <main>
             <section class="configuration-panel">
                 <div class="card">
-                    <h2><i class="fas fa-plus-circle"></i> Add Process to Queue</h2>
+                    <h2>Add Process to Queue</h2>
+
                     <form id="process-form" class="form-grid">
                         <div class="form-group">
                             <label for="p_id">Process ID</label>
@@ -34,12 +36,13 @@
                             <input type="number" id="burst" min="1" value="5" step="1" required>
                         </div>
                         <div class="form-group">
-                            <label for="priority">Priority (1–10)</label>
+                            <label for="priority">Priority (1-10)</label>
                             <input type="number" id="priority" min="1" max="10" value="3" required>
                         </div>
                         <div class="form-actions">
                             <button type="submit" id="add-btn" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add Process
+                                Add Process
+
                             </button>
                         </div>
                     </form>
@@ -49,13 +52,16 @@
             <section class="display-panel">
                 <div class="card">
                     <div class="card-header">
-                        <h2><i class="fas fa-layer-group"></i> Process Queue</h2>
+                        <h2>Process Queue</h2>
+
                         <div class="card-actions">
                             <button id="clear-btn" class="btn btn-secondary">
-                                <i class="fas fa-trash-alt"></i> Clear All
+                                Clear All
+
                             </button>
                             <button id="predict-btn" class="btn btn-accent">
-                                <i class="fas fa-brain"></i> Predict Workload Algorithm
+                                Predict Workload Algorithm
+
                             </button>
                         </div>
                     </div>
@@ -103,7 +109,7 @@
         </main>
 
         <footer>
-            <p>OS Scheduler - Queue-Level ML Intelligence 2024</p>
+            <p>OS Scheduler using ML Intelligence </p>
         </footer>
     </div>
 
@@ -116,6 +122,7 @@
         </div>
     </div>
 
-    <script src="/static/script.js?v=2024.4.14.1032"></script>
+    <script src="/static/script.js?v=3"></script>
+
 </body>
 </html>
