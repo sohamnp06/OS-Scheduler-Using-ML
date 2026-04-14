@@ -1,10 +1,17 @@
-pandas
-numpy
-scikit-learn
+# OS Scheduler Project Dependencies
+
+# Core Backend
 fastapi
 uvicorn
 pydantic
 aiofiles
-pygame
-joblib
+
+# Machine Learning & Data Science
+numpy
 scipy
+pandas
+scikit-learn
+joblib
+
+# Simulation Engine
+pygame

@@ -1,83 +1,84 @@
-# ML-Powered OS Workload Scheduler
+# Intelligent OS Workload Scheduler & Simulator
 
 ## Overview
-Traditional Operating Systems rely on static, rule-based scheduling algorithms (FCFS, Priority, SJF, SRTF, Round Robin). This project takes an intelligent, data-driven approach by replacing static rules with a **Machine Learning Pipeline**.
+This project is an advanced Operating Systems simulation environment that leverages Machine Learning to solve the classic CPU scheduling problem. While traditional schedulers use static, hard-coded rules, this system treats the process queue as a dynamic workload, using a trained model to analyze the statistical characteristics of the entire queue and predict the optimal scheduling algorithm.
 
-Instead of predicting an algorithm for individual processes, this application analyzes the **entire process queue as a single workload**. By evaluating the aggregate statistics of the current workload, the Machine Learning model recommends the single most optimal scheduling algorithm to minimize turnaround time, reduce waiting time, and maximize CPU utilization. 
-
-## Key Features
-
-- **Queue-Level Intelligence**: Predicts the best algorithm for the entire process queue instead of deciding on a process-by-process basis.
-- **Dynamic Reasoning**: Provides a clear, logical explanation of *why* the model chose a specific algorithm.
-- **FastAPI Backend**: A lightweight, lightning-fast Python backend running `uvicorn` and serving the model asynchronously.
-- **Live React-like UI (Vanilla JS)**: A beautiful, responsive dark-theme frontend that dynamically calculates constraints and lets you visualize your queue.
-
-## Feature Engineering
-
-The `logic.py` data generation module simulates realistic scenarios and extracts **macro-level statistical features** from the process queue:
-
-### 1. Basic Burst Statistics
-- **Mean Burst Time**: The average CPU burst time.
-- **Burst Standard Deviation**: Predicts the variance in job sizes. High variance signals the danger of the "Convoy Effect," leading the model to suggest Shortest Job First (SJF) or Shortest Remaining Time First (SRTF).
-- **Min / Max Burst**: Identifies extreme outliers in the queue.
-
-### 2. Arrival Characteristics
-- **Arrival Spread**: The difference between the maximum and minimum arrival times, letting the workload know if it needs a pre-emptive (SRTF) or non-preemptive (SJF) algorithm.
-
-### 3. Priority Metrics
-- **Mean Priority & Priority Variance**: Indicates how critical the queue is. A high priority variance means some processes drastically need the CPU over others, steering the model naturally towards Priority Scheduling.
-
-### 4. Composition Metrics
-- **% CPU Bound / % IO Bound**: Measures process types context. If a workload heavily features IO-bound processes (>50%), the model favors Round Robin scheduling to keep the CPU active during I/O waits.
+The system is split into a robust **FastAPI backend** for ML-driven intelligence and a high-performance **Pygame simulation engine** for visual verification of scheduling logic.
 
 ---
 
-## Architecture & Tech Stack
+## Core Components
 
-| Component | Technology | Description |
-|-----------|------------|-------------|
-| **Data Generation** | `pandas`, `numpy` | Simulates OS conditions and applies logic rules dynamically. (`logic.py`) |
-| **ML Training** | `scikit-learn` | A `RandomForestClassifier` nested inside a `Pipeline` with standard scaling. (`train_final_model.py`) |
-| **Backend API** | `FastAPI`, `uvicorn` | Provides the REST API serving the frontend and exposing the `/predict` algorithm engine. (`app.py`) |
-| **Frontend UI** | HTML / CSS / Vanilla JS | Sleek dashboard running directly from the FastAPI static folder to prevent CORS. (`frontend/`) |
+### 1. ML Prediction Engine (`app.py`)
+A FastAPI-powered server that analyzes incoming process workloads. It performs real-time feature engineering to extract macro-level statistics from the process queue, including:
+- **Mean Burst Time**: Represents the average computational load per process.
+- **Burst Standard Deviation**: Measures the variance in task sizes to detect potential "convoy effects."
+- **Arrival Spread**: Evaluates the temporal distribution of incoming tasks.
+- **Priority Variance**: Determines the critical nature of the workload based on task importance levels.
+
+### 2. Interactive Dashboard (`frontend/`)
+A premium, dark-themed management interface designed for high clarity and data density.
+- **Dynamic Queue Management**: Add, remove, and manage processes in real-time.
+- **Live ML Diagnostics**: View predicted algorithms with logical reasoning provided by the model.
+- **Queue Characteristic Popups**: Click on any workload metric to see a detailed explanation of its calculation and impact on scheduling.
+- **Clean Aesthetic**: A professional, emoji-free interface focused on data visualization.
+
+### 3. Simulation Engine (`main.py`)
+A specialized Pygame-based visualizer that brings the predicted algorithm to life.
+- **Smooth Animations**: Watch processes migrate from the Ready Queue to the CPU with frame-independent movement.
+- **Real-Time Gantt Data**: See turnaround times and waiting times calculated live during the simulation.
+- **Multiple Algorithm Support**: Fully implemented logic for FCFS, SJF, SRTF, Round Robin, and Priority Scheduling.
 
 ---
 
-## How to Run the Project Locally
+## Supported Scheduling Algorithms
 
-### 1. Requirements
+- **FCFS (First-Come, First-Served)**: Optimal for workloads with similar burst times and low arrival density.
+- **SJF (Shortest Job First)**: Minimizes average waiting time by prioritizing shorter tasks in non-preemptive scenarios.
+- **SRTF (Shortest Remaining Time First)**: The preemptive version of SJF, ideal for environments with frequent new task arrivals.
+- **Round Robin (RR)**: Ensures fairness and responsiveness in time-sharing environments.
+- **Priority Scheduling**: Guarantees that critical system tasks obtain the CPU before lower-priority processes.
 
-Ensure you have Python 3.9+ installed.
+---
 
-### 2. Installation
+## Getting Started
 
-Open your terminal in the project directory. If you have a virtual environment (e.g. `venv`), activate it. Then, install the essential packages:
+### Prerequisites
+- Python 3.9 or higher
+- `pip` package manager
 
-```bash
-pip install -r requirements.txt
-```
+### Installation
+1. Navigate to the project directory:
+   ```bash
+   cd OS-Scheduler-Using-ML
+   ```
+2. Install the required dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### 3. Re-train the Model (Optional)
+### Running the Application
+To start the integrated environment:
+1. Launch the backend server:
+   ```bash
+   python app.py
+   ```
+2. Open your web browser and navigate to:
+   **`http://127.0.0.1:5051`**
+3. Add your desired processes to the queue and click **"Predict Workload Algorithm"**.
+4. Click **"Run Simulation"** to launch the Pygame visualizer and watch the algorithm in action.
 
-If you modify the logic in `logic.py`, you can regenerate the dataset and retrain the Random Forest model:
+---
 
-```bash
-python train_final_model.py
-```
+## Project Structure
+- `app.py`: FastAPI server and ML inference logic.
+- `main.py`: Pygame simulation and scheduling implementation.
+- `frontend/`: HTML, CSS, and Vanilla JS for the web dashboard.
+- `artifacts/`: Contains the trained `scheduler_model.pkl` and feature scaling data.
+- `notebooks/`: Exploratory Data Analysis (EDA) and model training experiments.
+- `logic.py`: Core logic for feature extraction and data generation.
 
-*This will overwrite `scheduler_model.pkl` with your new logic.*
+---
 
-### 4. Start the Application
-
-Start the FastAPI server:
-
-```bash
-python app.py
-```
-
-### 5. Access the UI
-
-Open your browser and navigate to:
-**`http://127.0.0.1:5050`**
-
-From there, you can start adding processes and watch the Machine Learning model deduce the correct algorithm and statistical spread.
+## License
+MIT License - Developed for OS Scheduling education and ML integration research.
